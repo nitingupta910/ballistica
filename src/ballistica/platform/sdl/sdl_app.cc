@@ -445,7 +445,9 @@ void SDLApp::DoSwap() {
 
       // A common cause of slowness is excessive smoke and bg stuff;
       // lets tell the bg dynamics thread to tone it down.
-      g_bg_dynamics->TooSlow();
+      if (g_app_globals->stats_file == NULL) {
+        g_bg_dynamics->TooSlow();
+      }
     }
   }
   last_swap_time_ = cur_time;

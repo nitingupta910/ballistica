@@ -1358,8 +1358,10 @@ void Game::ApplyConfig() {
   bool auto_v_sync{};
 
   // NG
-  v_sync = "Never";
-  fprintf(stderr, "NG: disabling vsync\n");
+  if (g_app_globals->stats_file != NULL) {
+    fprintf(stderr, "NG: disabling vsync\n");
+    v_sync = "Never";
+  }
 
   if (v_sync == "Auto") {
     do_v_sync = true;
@@ -1375,6 +1377,9 @@ void Game::ApplyConfig() {
     auto_v_sync = false;
     Log("Error: Invalid 'Vertical Sync' value: '" + v_sync + "'");
   }
+
+  fprintf(stderr, "NG: do_v_sync=%d, auto_v_sync=%d\n",
+          do_v_sync, auto_v_sync);
 
   g_graphics_server->PushSetVSyncCall(do_v_sync, auto_v_sync);
 
