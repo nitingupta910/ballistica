@@ -18,6 +18,9 @@
 #include "ballistica/python/python.h"
 #include "ballistica/scene/scene.h"
 
+#include <stdio.h>
+#include <unistd.h>
+
 namespace ballistica {
 
 // These are set automatically via script; don't modify them here.
@@ -90,6 +93,17 @@ auto BallisticaMain(int argc, char** argv) -> int {
     g_account = new Account();
     g_utils = new Utils();
     Scene::Init();
+
+    if ((argc == 2) && (argv[1] != NULL)) {
+      const char *fname = argv[1];
+      g_app_globals->stats_file = fopen(fname, "w");
+      if (!g_app_globals->stats_file) {
+        int err = errno;
+        fprintf(stderr, "Error opening CSV file: %s\n", strerror(err));
+        return -err;
+      }
+      fprintf(stdout, "Using stats file: %s\n", fname);
+    }
 
     // Create a Thread wrapper around the current (main) thread.
     g_main_thread = new Thread(ThreadIdentifier::kMain, ThreadType::kMain);
@@ -174,6 +188,14 @@ auto BallisticaMain(int argc, char** argv) -> int {
   }
 
   g_platform->WillExitMain(false);
+
+  FILE *f = g_app_globals->stats_file;
+  if (f) {
+    fflush(f);
+    fsync(fileno(f));
+    fclose(f);
+  }
+
   return g_app_globals->return_value;
 }
 

@@ -1356,6 +1356,11 @@ void Game::ApplyConfig() {
       g_app_config->Resolve(AppConfig::StringID::kVerticalSync);
   bool do_v_sync{};
   bool auto_v_sync{};
+
+  // NG
+  v_sync = "Never";
+  fprintf(stderr, "NG: disabling vsync\n");
+
   if (v_sync == "Auto") {
     do_v_sync = true;
     auto_v_sync = true;
@@ -1370,6 +1375,7 @@ void Game::ApplyConfig() {
     auto_v_sync = false;
     Log("Error: Invalid 'Vertical Sync' value: '" + v_sync + "'");
   }
+
   g_graphics_server->PushSetVSyncCall(do_v_sync, auto_v_sync);
 
   g_audio->SetVolumes(g_app_config->Resolve(AppConfig::FloatID::kMusicVolume),

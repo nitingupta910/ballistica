@@ -33,6 +33,8 @@ class SDLApp : public App {
   auto SetInitialScreenDimensions(const Vector2f& dimensions) -> void;
 
  private:
+
+
   // Given an sdl joystick ID, returns our ballistica input for it.
   auto GetSDLJoyStickInput(int sdl_joystick_id) const -> Joystick*;
 
@@ -56,6 +58,9 @@ class SDLApp : public App {
 
   /// This is in points; not pixels.
   Vector2f screen_dimensions_{1.0f, 1.0f};
+
+  double prev_frame_ts = -1;
+  unsigned int fps_framecount = 0;
 };
 
 }  // namespace ballistica

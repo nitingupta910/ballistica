@@ -14,6 +14,10 @@
 #include "ballistica/platform/platform.h"
 #include "ballistica/python/python.h"
 
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/time.h>
+
 namespace ballistica {
 
 // NOTE TO SELF: slowly try to phase everything out from here and into
@@ -362,6 +366,22 @@ void SDLApp::DidFinishRenderingFrame(FrameDef* frame) {
   SwapBuffers();
 }
 
+/* return current time (in seconds) */
+static double current_time(void)
+{
+    struct timeval tv;
+    struct timezone tz;
+    (void) gettimeofday(&tv, &tz);
+
+    return (double) tv.tv_sec + tv.tv_usec / 1000000.0;
+}
+
+/* return current time (in ms) */
+static unsigned long current_time_ms(void)
+{
+    return current_time() * 1000;
+}
+
 void SDLApp::DoSwap() {
   assert(InMainThread());
 
@@ -372,6 +392,8 @@ void SDLApp::DoSwap() {
     }
   }
 
+  double t = current_time();
+
 #if BA_ENABLE_OPENGL
 #if BA_SDL2_BUILD
   SDL_GL_SwapWindow(g_graphics_server->gl_context()->sdl_window());
@@ -379,6 +401,26 @@ void SDLApp::DoSwap() {
   SDL_GL_SwapBuffers();
 #endif  // BA_SDL2_BUILD
 #endif  // BA_ENABLE_OPENGL
+  
+  if (g_app_globals->stats_file) {
+    FILE *f = g_app_globals->stats_file;
+    fps_framecount++;
+    fprintf(f, "%lu\n", current_time_ms());
+    if (prev_frame_ts < 0) {
+      prev_frame_ts = t;
+    }
+    if (t - prev_frame_ts >= 5.0) {
+      double seconds = t - prev_frame_ts;
+      double fps = fps_framecount / seconds;
+      fprintf(stdout, "[%d] %d frames in %3.1f seconds = %6.3f FPS\n",
+              getpid(), fps_framecount, seconds, fps);
+      fflush(stdout);
+      fflush(f);
+      fsync(fileno(f));
+      prev_frame_ts = t;
+      fps_framecount = 0;
+    }
+  }
 
   millisecs_t cur_time = GetRealTime();
 
