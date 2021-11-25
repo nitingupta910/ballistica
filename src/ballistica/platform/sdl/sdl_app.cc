@@ -402,24 +402,27 @@ void SDLApp::DoSwap() {
 #endif  // BA_SDL2_BUILD
 #endif  // BA_ENABLE_OPENGL
   
-  if (g_app_globals->stats_file) {
-    FILE *f = g_app_globals->stats_file;
-    fps_framecount++;
+  FILE *f = g_app_globals->stats_file;
+  if (f) {
     fprintf(f, "%lu\n", current_time_ms());
-    if (prev_frame_ts < 0) {
-      prev_frame_ts = t;
-    }
-    if (t - prev_frame_ts >= 5.0) {
-      double seconds = t - prev_frame_ts;
-      double fps = fps_framecount / seconds;
-      fprintf(stdout, "[%d] %d frames in %3.1f seconds = %6.3f FPS\n",
-              getpid(), fps_framecount, seconds, fps);
-      fflush(stdout);
+  }
+  fps_framecount++;
+
+  if (prev_frame_ts < 0) {
+    prev_frame_ts = t;
+  }
+  if (t - prev_frame_ts >= 5.0) {
+    double seconds = t - prev_frame_ts;
+    double fps = fps_framecount / seconds;
+    fprintf(stdout, "[%d] %d frames in %3.1f seconds = %6.3f FPS\n",
+            getpid(), fps_framecount, seconds, fps);
+    fflush(stdout);
+    if (f) {
       fflush(f);
       fsync(fileno(f));
-      prev_frame_ts = t;
-      fps_framecount = 0;
     }
+    prev_frame_ts = t;
+    fps_framecount = 0;
   }
 
   millisecs_t cur_time = GetRealTime();

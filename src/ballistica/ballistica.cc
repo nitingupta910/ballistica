@@ -94,7 +94,7 @@ auto BallisticaMain(int argc, char** argv) -> int {
     g_utils = new Utils();
     Scene::Init();
 
-    if ((argc == 2) && (argv[1] != NULL)) {
+    if (argc >= 2) {
       const char *fname = argv[1];
       g_app_globals->stats_file = fopen(fname, "w");
       if (!g_app_globals->stats_file) {
